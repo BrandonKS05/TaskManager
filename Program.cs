@@ -2,6 +2,14 @@ using TaskManager.Models;
 using TaskManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
+{
+    var port = Environment.GetEnvironmentVariable("PORT");
+    if (!string.IsNullOrEmpty(port))
+        builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
 builder.Services.AddSingleton<TaskStore>();
 
 var app = builder.Build();

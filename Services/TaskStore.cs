@@ -13,7 +13,7 @@ public class TaskStore
 {
     private readonly List<TodoList> _lists = [];
     private readonly List<TaskItem> _tasks = [];
-    private readonly Lock _lock = new();
+    private readonly object _lock = new();
 
     public TaskStore()
     {

@@ -1,0 +1,40 @@
+# Deploy ASP.NET Core 8 to Azure App Service (Linux).
+#
+# Setup (once):
+# 1. Azure Portal → your Web App → Download publish profile → copy entire file contents.
+# 2. GitHub repo → Settings → Secrets and variables → Actions → New repository secret:
+#    Name:  AZURE_WEBAPP_PUBLISH_PROFILE
+#    Value: (paste publish profile XML)
+# 3. Edit AZURE_WEBAPP_NAME below to match your App Service name, or add repo variable AZURE_WEBAPP_NAME.
+
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: YOUR_APP_NAME_HERE
+  DOTNET_VERSION: "8.0.x"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish
+        run: dotnet publish TaskManager.csproj -c Release -o "${{ github.workspace }}/publish"
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: "${{ github.workspace }}/publish"

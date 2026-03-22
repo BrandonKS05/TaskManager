@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#121212" />
+  <title>Fastodo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="rail rail--left" aria-label="Lists">
+      <a href="/" class="brand">
+        <span class="brand__icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M13 2L3 14h8l-1 8 10-12h-8l1-8z"
+              fill="currentColor"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+        <span class="brand__name">Fastodo</span>
+      </a>
+
+      <p class="rail__label">My Lists</p>
+      <ul class="list-nav" id="list-nav"></ul>
+      <button type="button" class="new-list" id="btn-new-list">+ New List</button>
+    </aside>
+
+    <main class="main">
+      <header class="main__header">
+        <h1 class="main__greet" id="greet-line">Good afternoon.</h1>
+        <p class="main__sub">What’s your plan for today?</p>
+      </header>
+
+      <form class="add-bar" id="add-form" autocomplete="off">
+        <input
+          type="text"
+          id="title-input"
+          class="add-bar__input"
+          placeholder="Add Todo"
+          maxlength="500"
+          aria-label="New todo title"
+        />
+        <input
+          type="text"
+          id="tag-input"
+          class="add-bar__tag"
+          placeholder="#tag"
+          maxlength="64"
+          aria-label="Optional tag"
+        />
+      </form>
+
+      <ul class="task-grid" id="task-list" aria-live="polite"></ul>
+
+      <div class="empty" id="empty-state" hidden>
+        <p class="empty__title">No todos for this view</p>
+        <p class="empty__hint">Try another day or tap Show All.</p>
+      </div>
+    </main>
+
+    <aside class="rail rail--right" aria-label="Calendar and sort">
+      <div class="cal">
+        <div class="cal__top">
+          <button type="button" class="cal__nav" id="cal-prev" aria-label="Previous month">‹</button>
+          <span class="cal__title" id="cal-title">2026 Mar</span>
+          <button type="button" class="cal__nav" id="cal-next" aria-label="Next month">›</button>
+        </div>
+        <div class="cal__weekdays" aria-hidden="true">
+          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+        </div>
+        <div class="cal__days" id="cal-days"></div>
+        <button type="button" class="cal__all" id="btn-show-all">Show All</button>
+      </div>
+
+      <p class="rail__label rail__label--spaced">Sort Method</p>
+      <div class="sort-grid" id="sort-grid" role="group" aria-label="Sort by">
+        <button type="button" class="sort-pill is-active" data-sort="none">None</button>
+        <button type="button" class="sort-pill" data-sort="date">Date</button>
+        <button type="button" class="sort-pill" data-sort="tag">Tag</button>
+        <button type="button" class="sort-pill" data-sort="name">Name</button>
+        <button type="button" class="sort-pill" data-sort="priority">Priority</button>
+      </div>
+    </aside>
+  </div>
+  <script src="js/app.js"></script>
+</body>
+</html>

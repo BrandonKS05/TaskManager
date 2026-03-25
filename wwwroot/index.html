@@ -43,22 +43,48 @@
       </header>
 
       <form class="add-bar" id="add-form" autocomplete="off">
-        <input
-          type="text"
-          id="title-input"
-          class="add-bar__input"
-          placeholder="Add Todo"
-          maxlength="500"
-          aria-label="New todo title"
-        />
-        <input
-          type="text"
-          id="tag-input"
-          class="add-bar__tag"
-          placeholder="#tag"
-          maxlength="64"
-          aria-label="Optional tag"
-        />
+        <div class="add-bar__row">
+          <input
+            type="text"
+            id="title-input"
+            class="add-bar__input"
+            placeholder="Add Todo"
+            maxlength="500"
+            aria-label="New todo title"
+          />
+          <button type="submit" class="add-bar__submit" id="add-submit" aria-label="Add todo">Add</button>
+        </div>
+        <div class="add-bar__meta">
+          <input
+            type="text"
+            id="tag-input"
+            class="add-bar__tag"
+            placeholder="#tag"
+            maxlength="64"
+            aria-label="Optional tag"
+          />
+          <label class="add-bar__field">
+            <span class="add-bar__field-label">Importance</span>
+            <select id="importance-input" class="add-bar__select" aria-label="Importance 1 to 5">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+          <label class="add-bar__field">
+            <span class="add-bar__field-label">Complexity</span>
+            <select id="complexity-input" class="add-bar__select" aria-label="Complexity 1 to 5">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+        </div>
+        <p class="add-bar__hint" id="due-hint">Due date uses the day selected on the calendar (or today if Show All).</p>
       </form>
 
       <ul class="task-grid" id="task-list" aria-live="polite"></ul>

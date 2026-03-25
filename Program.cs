@@ -42,7 +42,13 @@ lists.MapGet("/{listId:guid}/tasks", (Guid listId, TaskStore store) =>
 
 lists.MapPost("/{listId:guid}/tasks", (Guid listId, TaskStore store, CreateTaskRequest body) =>
 {
-    var task = store.AddTask(listId, body.Title, body.Tag, body.Priority ?? 0);
+    var task = store.AddTask(
+        listId,
+        body.Title,
+        body.Tag,
+        body.Importance ?? 3,
+        body.Complexity ?? 3,
+        body.DueDate);
     return task is null
         ? Results.BadRequest(new { error = "Invalid list or title." })
         : Results.Created($"/api/tasks/{task.Id}", task);
@@ -62,4 +68,4 @@ app.Run();
 
 internal record CreateListRequest(string? Name);
 
-internal record CreateTaskRequest(string? Title, string? Tag, int? Priority);
+internal record CreateTaskRequest(string? Title, string? Tag, int? Importance, int? Complexity, string? DueDate);

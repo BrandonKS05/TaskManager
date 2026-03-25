@@ -72,10 +72,17 @@ public class TaskStore
         }
     }
 
-    public TaskItem? AddTask(Guid listId, string? title, string? tag, int priority)
+    public TaskItem? AddTask(Guid listId, string? title, string? tag, int importance, int complexity, string? dueDateYyyyMmDd)
     {
         if (string.IsNullOrWhiteSpace(title))
             return null;
+
+        importance = Math.Clamp(importance, 1, 5);
+        complexity = Math.Clamp(complexity, 1, 5);
+        var now = DateTime.UtcNow;
+        var daysRemaining = UrgencyCalculator.DaysRemainingFromDueDate(dueDateYyyyMmDd, now);
+        var stars = UrgencyCalculator.ComputeStars(importance, complexity, daysRemaining);
+        var dueNorm = NormalizeDueDate(dueDateYyyyMmDd);
 
         lock (_lock)
         {
@@ -88,14 +95,24 @@ public class TaskStore
                 ListId = listId,
                 Title = title.Trim(),
                 IsComplete = false,
-                CreatedAtUtc = DateTime.UtcNow,
+                CreatedAtUtc = now,
                 Tag = NormalizeTag(tag),
-                Priority = priority
+                Priority = stars,
+                Importance = importance,
+                Complexity = complexity,
+                DueDate = dueNorm
             };
 
             _tasks.Add(task);
             return task;
         }
+    }
+
+    private static string? NormalizeDueDate(string? due)
+    {
+        if (string.IsNullOrWhiteSpace(due))
+            return null;
+        return DateOnly.TryParse(due.Trim(), out var d) ? d.ToString("yyyy-MM-dd") : null;
     }
 
     public bool Complete(Guid id)

@@ -4,6 +4,8 @@ const emptyEl = document.getElementById("empty-state");
 const formEl = document.getElementById("add-form");
 const titleInput = document.getElementById("title-input");
 const tagInput = document.getElementById("tag-input");
+const importanceInput = document.getElementById("importance-input");
+const complexityInput = document.getElementById("complexity-input");
 const greetEl = document.getElementById("greet-line");
 const calTitleEl = document.getElementById("cal-title");
 const calDaysEl = document.getElementById("cal-days");
@@ -39,6 +41,33 @@ function formatTaskDate(iso) {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
+}
+
+function formatLocalYmd(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function dueDateForNewTask() {
+  const d = filterDate || startOfDay(new Date());
+  return formatLocalYmd(d);
+}
+
+function starRatingEl(priority) {
+  const n = Math.max(1, Math.min(5, Number(priority) || 1));
+  const wrap = document.createElement("span");
+  wrap.className = "task-card__stars";
+  wrap.setAttribute("aria-label", `Urgency ${n} out of 5`);
+  for (let i = 0; i < 5; i++) {
+    const s = document.createElement("span");
+    s.className = "task-card__star" + (i < n ? " is-on" : "");
+    s.textContent = "★";
+    s.setAttribute("aria-hidden", "true");
+    wrap.append(s);
+  }
+  return wrap;
 }
 
 function taskLocalDay(iso) {
@@ -207,7 +236,7 @@ function renderTasks() {
     const titleEl = document.createElement("span");
     titleEl.className = "task-card__title";
     titleEl.textContent = task.title;
-    body.append(dateEl, titleEl);
+    body.append(dateEl, titleEl, starRatingEl(task.priority));
 
     const tagEl = document.createElement("span");
     tagEl.className = "task-card__tag";
@@ -334,7 +363,15 @@ formEl.addEventListener("submit", async (e) => {
   const title = titleInput.value.trim();
   if (!title || !selectedListId) return;
   const tagRaw = tagInput.value.trim();
-  const body = { title, tag: tagRaw || null, priority: 0 };
+  const importance = Number(importanceInput.value) || 3;
+  const complexity = Number(complexityInput.value) || 3;
+  const body = {
+    title,
+    tag: tagRaw || null,
+    importance,
+    complexity,
+    dueDate: dueDateForNewTask(),
+  };
   const res = await api(`/api/lists/${selectedListId}/tasks`, {
     method: "POST",
     body: JSON.stringify(body),
@@ -346,6 +383,9 @@ formEl.addEventListener("submit", async (e) => {
   }
   titleInput.value = "";
   tagInput.value = "";
+  importanceInput.value = "3";
+  complexityInput.value = "3";
+  titleInput.focus();
   await refreshTasks();
 });
 

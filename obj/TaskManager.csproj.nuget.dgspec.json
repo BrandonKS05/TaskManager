@@ -10,7 +10,7 @@
         "projectUniqueName": "/Users/brandonlee/TaskManager/TaskManager.csproj",
         "projectName": "TaskManager",
         "projectPath": "/Users/brandonlee/TaskManager/TaskManager.csproj",
-        "packagesPath": "/Users/brandonlee/.nuget/packages/",
+        "packagesPath": "/var/folders/lc/bfl59jqj5qj02j50njxml9zr0000gn/T/cursor-sandbox-cache/2ad3abc38a9acd1bce4cac8808c36b9e/nuget",
         "outputPath": "/Users/brandonlee/TaskManager/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [

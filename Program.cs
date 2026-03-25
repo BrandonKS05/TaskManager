@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using TaskManager.Data;
 using TaskManager.Models;
 using TaskManager.Services;
@@ -12,9 +13,14 @@ if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
         builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 }
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(connectionString))
+var rawConnectionString =
+    Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrWhiteSpace(rawConnectionString))
     throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
+
+var connectionString = NormalizePostgresConnectionString(rawConnectionString);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -101,6 +107,51 @@ tasks.MapDelete("/{id:guid}", async (Guid id, TaskStore store, CancellationToken
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+static string NormalizePostgresConnectionString(string raw)
+{
+    if (!raw.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
+        && !raw.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+    {
+        return raw;
+    }
+
+    var uri = new Uri(raw);
+    var userInfoParts = uri.UserInfo.Split(':', 2);
+    var username = userInfoParts.Length > 0 ? Uri.UnescapeDataString(userInfoParts[0]) : "";
+    var password = userInfoParts.Length > 1 ? Uri.UnescapeDataString(userInfoParts[1]) : "";
+    var database = uri.AbsolutePath.Trim('/'); // Neon-style URL usually has "/dbname"
+
+    var builder = new NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.IsDefaultPort ? 5432 : uri.Port,
+        Database = database,
+        Username = username,
+        Password = password
+    };
+
+    if (!string.IsNullOrWhiteSpace(uri.Query))
+    {
+        var pairs = uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var pair in pairs)
+        {
+            var kv = pair.Split('=', 2);
+            var key = Uri.UnescapeDataString(kv[0]).Trim().ToLowerInvariant();
+            var value = kv.Length > 1 ? Uri.UnescapeDataString(kv[1]).Trim() : "";
+
+            if (key == "sslmode" && Enum.TryParse<SslMode>(value, true, out var sslMode))
+                builder.SslMode = sslMode;
+            else if (key == "sslmode" && string.Equals(value, "require", StringComparison.OrdinalIgnoreCase))
+                builder.SslMode = SslMode.Require;
+        }
+    }
+
+    if (builder.SslMode == SslMode.Disable)
+        builder.SslMode = SslMode.Require;
+
+    return builder.ConnectionString;
+}
 
 internal record CreateListRequest(string? Name);
 

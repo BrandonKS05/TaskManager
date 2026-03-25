@@ -23,6 +23,17 @@ let sortMode = "none";
 let filterDate = null;
 let calView = { y: new Date().getFullYear(), m: new Date().getMonth() };
 
+const DEVICE_ID_STORAGE_KEY = "fastodo_device_id";
+
+function ensureDeviceId() {
+  let id = localStorage.getItem(DEVICE_ID_STORAGE_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(DEVICE_ID_STORAGE_KEY, id);
+  }
+  return id;
+}
+
 function startOfDay(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
@@ -98,7 +109,11 @@ async function api(path, opts = {}) {
   const { headers: extraHeaders, ...rest } = opts;
   const res = await fetch(path, {
     ...rest,
-    headers: { "Content-Type": "application/json", ...extraHeaders },
+    headers: {
+      "Content-Type": "application/json",
+      "device-id": ensureDeviceId(),
+      ...extraHeaders,
+    },
   });
   return res;
 }

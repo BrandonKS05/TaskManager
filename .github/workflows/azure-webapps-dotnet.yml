@@ -1,3 +1,8 @@
+# Azure App Service: configure the PostgreSQL connection string as an app setting / environment variable:
+#   Name:  ConnectionStrings__DefaultConnection
+#   Value: Host=...;Database=...;Username=...;Password=...;Ssl Mode=Require
+# (Double underscore maps to ConnectionStrings:DefaultConnection in ASP.NET Core configuration.)
+
 name: Deploy to Azure App Service
 
 on:

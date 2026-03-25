@@ -35,9 +35,9 @@ body {
 
 .app {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 260px;
+  grid-template-columns: 220px minmax(0, 1fr);
   min-height: 100vh;
-  max-width: 1280px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -45,11 +45,6 @@ body {
   padding: 1.5rem 1.25rem;
   border-right: 1px solid var(--border);
   background: var(--bg);
-}
-
-.rail--right {
-  border-right: none;
-  border-left: 1px solid var(--border);
 }
 
 .brand {
@@ -273,11 +268,34 @@ body {
   border-color: var(--accent);
 }
 
-.add-bar__hint {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--muted-2);
-  line-height: 1.4;
+.add-bar__date {
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8125rem;
+  color-scheme: dark;
+  min-height: 2.1rem;
+  cursor: pointer;
+}
+
+.add-bar__date:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.main__sort {
+  margin-bottom: 1.25rem;
+}
+
+.main__sort-label {
+  margin-bottom: 0.5rem;
+}
+
+.main__sort .sort-grid {
+  max-width: 440px;
 }
 
 .add-bar__input {
@@ -392,6 +410,12 @@ body {
   color: var(--muted);
 }
 
+.task-card__due {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
 .task-card__title {
   font-size: 0.9375rem;
   font-weight: 500;
@@ -402,6 +426,11 @@ body {
 .task-card.is-done .task-card__title {
   text-decoration: line-through;
   color: var(--muted);
+}
+
+.task-card.is-done .task-card__due {
+  color: var(--muted);
+  font-weight: 400;
 }
 
 .task-card__stars {
@@ -485,120 +514,6 @@ body {
   font-size: 0.875rem;
 }
 
-.cal {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.85rem;
-}
-
-.cal__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.65rem;
-}
-
-.cal__title {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.cal__nav {
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  color: var(--text);
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.cal__nav:hover {
-  background: #252525;
-}
-
-.cal__weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  margin-bottom: 0.35rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: var(--muted-2);
-  text-align: center;
-}
-
-.cal__days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-
-.cal__day {
-  aspect-ratio: 1;
-  max-height: 32px;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.cal__day:hover:not(:disabled) {
-  background: var(--surface-2);
-  color: var(--text);
-}
-
-.cal__day.is-muted {
-  opacity: 0.35;
-  cursor: default;
-}
-
-.cal__day.is-today {
-  color: var(--text);
-  box-shadow: inset 0 0 0 1px var(--muted-2);
-}
-
-.cal__day.is-selected {
-  background: var(--accent);
-  color: var(--accent-text);
-  font-weight: 600;
-}
-
-.cal__day.is-selected:hover {
-  background: var(--accent);
-  color: var(--accent-text);
-}
-
-.cal__all {
-  width: 100%;
-  margin-top: 0.75rem;
-  padding: 0.5rem;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  color: var(--muted);
-  font: inherit;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.cal__all:hover {
-  background: #2a2a2a;
-  color: var(--text);
-}
-
 .sort-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -638,10 +553,6 @@ body {
     border-right: none;
     border-left: none;
     border-bottom: 1px solid var(--border);
-  }
-
-  .rail--right {
-    border-top: 1px solid var(--border);
   }
 
   .main {

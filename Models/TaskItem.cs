@@ -14,10 +14,8 @@ public class TaskItem
     public bool IsComplete { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public string? Tag { get; set; }
-    /// <summary>1–5 star urgency rating derived from the urgency formula.</summary>
+    /// <summary>Manual priority / stars (1–5).</summary>
     public int Priority { get; set; }
-    public int Importance { get; set; }
-    public int Complexity { get; set; }
     /// <summary>Due date as yyyy-MM-dd (calendar date).</summary>
     public string? DueDate { get; set; }
 }

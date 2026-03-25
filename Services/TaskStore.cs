@@ -126,20 +126,19 @@ public class TaskStore
         Guid listId,
         string? title,
         string? tag,
-        int importance,
-        int complexity,
+        int priority,
         string? dueDateYyyyMmDd,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(title))
             return null;
 
-        importance = Math.Clamp(importance, 1, 5);
-        complexity = Math.Clamp(complexity, 1, 5);
-        var now = DateTime.UtcNow;
-        var daysRemaining = UrgencyCalculator.DaysRemainingFromDueDate(dueDateYyyyMmDd, now);
-        var stars = UrgencyCalculator.ComputeStars(importance, complexity, daysRemaining);
         var dueNorm = NormalizeDueDate(dueDateYyyyMmDd);
+        if (dueNorm is null)
+            return null;
+
+        priority = Math.Clamp(priority, 1, 5);
+        var now = DateTime.UtcNow;
         var deviceId = DeviceId;
 
         var listOk = await _db.Lists.AnyAsync(l => l.Id == listId && l.DeviceId == deviceId, cancellationToken);
@@ -155,9 +154,7 @@ public class TaskStore
             IsComplete = false,
             CreatedAtUtc = now,
             Tag = NormalizeTag(tag),
-            Priority = stars,
-            Importance = importance,
-            Complexity = complexity,
+            Priority = priority,
             DueDate = dueNorm
         };
 

@@ -64,18 +64,18 @@
             aria-label="Optional tag"
           />
           <label class="add-bar__field">
-            <span class="add-bar__field-label">Importance</span>
-            <select id="importance-input" class="add-bar__select" aria-label="Importance 1 to 5">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3" selected>3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
+            <span class="add-bar__field-label">Due date</span>
+            <input
+              type="date"
+              id="due-input"
+              class="add-bar__date"
+              required
+              aria-label="Due date"
+            />
           </label>
           <label class="add-bar__field">
-            <span class="add-bar__field-label">Complexity</span>
-            <select id="complexity-input" class="add-bar__select" aria-label="Complexity 1 to 5">
+            <span class="add-bar__field-label">Stars (1–5)</span>
+            <select id="priority-input" class="add-bar__select" aria-label="Priority 1 to 5 stars">
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3" selected>3</option>
@@ -84,40 +84,26 @@
             </select>
           </label>
         </div>
-        <p class="add-bar__hint" id="due-hint">Due date uses the day selected on the calendar (or today if Show All).</p>
       </form>
+
+      <div class="main__sort">
+        <p class="rail__label main__sort-label">Sort Method</p>
+        <div class="sort-grid" id="sort-grid" role="group" aria-label="Sort by">
+          <button type="button" class="sort-pill is-active" data-sort="none">None</button>
+          <button type="button" class="sort-pill" data-sort="date">Date</button>
+          <button type="button" class="sort-pill" data-sort="tag">Tag</button>
+          <button type="button" class="sort-pill" data-sort="name">Name</button>
+          <button type="button" class="sort-pill" data-sort="priority">Priority</button>
+        </div>
+      </div>
 
       <ul class="task-grid" id="task-list" aria-live="polite"></ul>
 
       <div class="empty" id="empty-state" hidden>
-        <p class="empty__title">No todos for this view</p>
-        <p class="empty__hint">Try another day or tap Show All.</p>
+        <p class="empty__title">No todos yet</p>
+        <p class="empty__hint">Add a todo above.</p>
       </div>
     </main>
-
-    <aside class="rail rail--right" aria-label="Calendar and sort">
-      <div class="cal">
-        <div class="cal__top">
-          <button type="button" class="cal__nav" id="cal-prev" aria-label="Previous month">‹</button>
-          <span class="cal__title" id="cal-title">2026 Mar</span>
-          <button type="button" class="cal__nav" id="cal-next" aria-label="Next month">›</button>
-        </div>
-        <div class="cal__weekdays" aria-hidden="true">
-          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-        </div>
-        <div class="cal__days" id="cal-days"></div>
-        <button type="button" class="cal__all" id="btn-show-all">Show All</button>
-      </div>
-
-      <p class="rail__label rail__label--spaced">Sort Method</p>
-      <div class="sort-grid" id="sort-grid" role="group" aria-label="Sort by">
-        <button type="button" class="sort-pill is-active" data-sort="none">None</button>
-        <button type="button" class="sort-pill" data-sort="date">Date</button>
-        <button type="button" class="sort-pill" data-sort="tag">Tag</button>
-        <button type="button" class="sort-pill" data-sort="name">Name</button>
-        <button type="button" class="sort-pill" data-sort="priority">Priority</button>
-      </div>
-    </aside>
   </div>
   <script src="js/app.js"></script>
 </body>

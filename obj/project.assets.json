@@ -2109,7 +2109,7 @@
     ]
   },
   "packageFolders": {
-    "/var/folders/lc/bfl59jqj5qj02j50njxml9zr0000gn/T/cursor-sandbox-cache/19c5288aee7a99b480cba6e25df8f256/nuget": {}
+    "/var/folders/lc/bfl59jqj5qj02j50njxml9zr0000gn/T/cursor-sandbox-cache/368452d8c927dd169c4b97fa673f789c/nuget": {}
   },
   "project": {
     "version": "1.0.0",
@@ -2117,7 +2117,7 @@
       "projectUniqueName": "/Users/brandonlee/TaskManager/TaskManager.csproj",
       "projectName": "TaskManager",
       "projectPath": "/Users/brandonlee/TaskManager/TaskManager.csproj",
-      "packagesPath": "/var/folders/lc/bfl59jqj5qj02j50njxml9zr0000gn/T/cursor-sandbox-cache/19c5288aee7a99b480cba6e25df8f256/nuget",
+      "packagesPath": "/var/folders/lc/bfl59jqj5qj02j50njxml9zr0000gn/T/cursor-sandbox-cache/368452d8c927dd169c4b97fa673f789c/nuget",
       "outputPath": "/Users/brandonlee/TaskManager/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [

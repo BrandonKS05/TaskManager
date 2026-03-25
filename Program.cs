@@ -87,8 +87,7 @@ lists.MapPost("/{listId:guid}/tasks", async (Guid listId, TaskStore store, Creat
         listId,
         body.Title,
         body.Tag,
-        body.Importance ?? 3,
-        body.Complexity ?? 3,
+        body.Priority ?? 3,
         body.DueDate,
         ct);
     return task is null
@@ -155,4 +154,4 @@ static string NormalizePostgresConnectionString(string raw)
 
 internal record CreateListRequest(string? Name);
 
-internal record CreateTaskRequest(string? Title, string? Tag, int? Importance, int? Complexity, string? DueDate);
+internal record CreateTaskRequest(string? Title, string? Tag, int? Priority, string? DueDate);

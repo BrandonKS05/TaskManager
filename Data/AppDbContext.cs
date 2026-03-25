@@ -49,8 +49,6 @@ public class AppDbContext : DbContext
             e.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
             e.Property(x => x.Tag).HasColumnName("tag").HasMaxLength(64);
             e.Property(x => x.Priority).HasColumnName("priority");
-            e.Property(x => x.Importance).HasColumnName("importance");
-            e.Property(x => x.Complexity).HasColumnName("complexity");
             e.Property(x => x.DueDate).HasColumnName("due_date").HasMaxLength(10);
 
             e.HasOne<TodoList>()

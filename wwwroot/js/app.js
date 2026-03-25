@@ -4,26 +4,20 @@ const emptyEl = document.getElementById("empty-state");
 const formEl = document.getElementById("add-form");
 const titleInput = document.getElementById("title-input");
 const tagInput = document.getElementById("tag-input");
-const importanceInput = document.getElementById("importance-input");
-const complexityInput = document.getElementById("complexity-input");
+const dueInput = document.getElementById("due-input");
+const priorityInput = document.getElementById("priority-input");
 const greetEl = document.getElementById("greet-line");
-const calTitleEl = document.getElementById("cal-title");
-const calDaysEl = document.getElementById("cal-days");
 const sortGridEl = document.getElementById("sort-grid");
 
 const btnNewList = document.getElementById("btn-new-list");
-const btnShowAll = document.getElementById("btn-show-all");
-const calPrev = document.getElementById("cal-prev");
-const calNext = document.getElementById("cal-next");
 
 let lists = [];
 let selectedListId = null;
 let tasksCache = [];
 let sortMode = "none";
-let filterDate = null;
-let calView = { y: new Date().getFullYear(), m: new Date().getMonth() };
 
 const DEVICE_ID_STORAGE_KEY = "fastodo_device_id";
+const reminderNotifiedTaskIds = new Set();
 
 function ensureDeviceId() {
   let id = localStorage.getItem(DEVICE_ID_STORAGE_KEY);
@@ -34,24 +28,51 @@ function ensureDeviceId() {
   return id;
 }
 
+function requestNotificationPermission() {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    Notification.requestPermission().catch(() => {});
+  }
+}
+
+function isDueWithinNext24Hours(dueYmd) {
+  if (!dueYmd || typeof dueYmd !== "string") return false;
+  const parts = dueYmd.split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return false;
+  const [y, m, d] = parts;
+  const start = new Date(y, m - 1, d, 0, 0, 0, 0);
+  const end = new Date(y, m - 1, d, 23, 59, 59, 999);
+  const now = Date.now();
+  const winEnd = now + 24 * 60 * 60 * 1000;
+  return start.getTime() <= winEnd && end.getTime() >= now;
+}
+
+async function runReminderCheck() {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  try {
+    const res = await api("/api/lists");
+    if (!res.ok) return;
+    const allLists = await res.json();
+    for (const list of allLists) {
+      const tr = await api(`/api/lists/${list.id}/tasks`);
+      if (!tr.ok) continue;
+      const tasks = await tr.json();
+      for (const task of tasks) {
+        if (task.isComplete) continue;
+        if (!task.dueDate) continue;
+        if (!isDueWithinNext24Hours(task.dueDate)) continue;
+        if (reminderNotifiedTaskIds.has(task.id)) continue;
+        reminderNotifiedTaskIds.add(task.id);
+        new Notification("Fastodo", {
+          body: `Reminder: ${task.title} is due soon.`,
+        });
+      }
+    }
+  } catch (_) {}
+}
+
 function startOfDay(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
-function sameDay(a, b) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
-function formatTaskDate(iso) {
-  const d = new Date(iso);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
 }
 
 function formatLocalYmd(d) {
@@ -61,16 +82,25 @@ function formatLocalYmd(d) {
   return `${y}-${m}-${day}`;
 }
 
-function dueDateForNewTask() {
-  const d = filterDate || startOfDay(new Date());
+function formatTaskDate(iso) {
+  const d = new Date(iso);
   return formatLocalYmd(d);
+}
+
+function formatDueDisplay(ymd) {
+  if (!ymd || typeof ymd !== "string") return "—";
+  const parts = ymd.split("-").map(Number);
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return ymd;
+  const [y, m, d] = parts;
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[m - 1]} ${d}, ${y}`;
 }
 
 function starRatingEl(priority) {
   const n = Math.max(1, Math.min(5, Number(priority) || 1));
   const wrap = document.createElement("span");
   wrap.className = "task-card__stars";
-  wrap.setAttribute("aria-label", `Urgency ${n} out of 5`);
+  wrap.setAttribute("aria-label", `Priority ${n} out of 5`);
   for (let i = 0; i < 5; i++) {
     const s = document.createElement("span");
     s.className = "task-card__star" + (i < n ? " is-on" : "");
@@ -79,10 +109,6 @@ function starRatingEl(priority) {
     wrap.append(s);
   }
   return wrap;
-}
-
-function taskLocalDay(iso) {
-  return startOfDay(new Date(iso));
 }
 
 function setGreeting() {
@@ -139,7 +165,12 @@ function sortTasks(arr) {
   const copy = [...arr];
   switch (sortMode) {
     case "date":
-      copy.sort((a, b) => new Date(a.createdAtUtc) - new Date(b.createdAtUtc));
+      copy.sort((a, b) => {
+        const da = a.dueDate || "";
+        const db = b.dueDate || "";
+        if (da !== db) return da.localeCompare(db);
+        return new Date(a.createdAtUtc) - new Date(b.createdAtUtc);
+      });
       break;
     case "tag":
       copy.sort((a, b) => displayTag(a).localeCompare(displayTag(b)));
@@ -157,11 +188,7 @@ function sortTasks(arr) {
 }
 
 function filteredTasks() {
-  let t = tasksCache;
-  if (filterDate) {
-    t = t.filter((task) => sameDay(taskLocalDay(task.createdAtUtc), filterDate));
-  }
-  return sortTasks(t);
+  return sortTasks(tasksCache);
 }
 
 function renderListNav() {
@@ -222,12 +249,8 @@ function renderTasks() {
   const showEmpty = items.length === 0;
   emptyEl.hidden = !showEmpty;
   if (showEmpty) {
-    emptyEl.querySelector(".empty__title").textContent =
-      tasksCache.length === 0 ? "No todos yet" : "No todos for this view";
-    emptyEl.querySelector(".empty__hint").textContent =
-      tasksCache.length === 0
-        ? "Add a todo above."
-        : "Pick another date or tap Show All.";
+    emptyEl.querySelector(".empty__title").textContent = "No todos yet";
+    emptyEl.querySelector(".empty__hint").textContent = "Add a todo above.";
   }
 
   for (const task of items) {
@@ -247,11 +270,14 @@ function renderTasks() {
     body.className = "task-card__body";
     const dateEl = document.createElement("span");
     dateEl.className = "task-card__date";
-    dateEl.textContent = formatTaskDate(task.createdAtUtc);
+    dateEl.textContent = "Added " + formatTaskDate(task.createdAtUtc);
+    const dueEl = document.createElement("span");
+    dueEl.className = "task-card__due";
+    dueEl.textContent = "Due " + formatDueDisplay(task.dueDate);
     const titleEl = document.createElement("span");
     titleEl.className = "task-card__title";
     titleEl.textContent = task.title;
-    body.append(dateEl, titleEl, starRatingEl(task.priority));
+    body.append(dateEl, dueEl, titleEl, starRatingEl(task.priority));
 
     const tagEl = document.createElement("span");
     tagEl.className = "task-card__tag";
@@ -266,53 +292,6 @@ function renderTasks() {
 
     li.append(check, body, tagEl, del);
     taskListEl.append(li);
-  }
-}
-
-function renderCalendar() {
-  const { y, m } = calView;
-  calTitleEl.textContent = `${y} ${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m]}`;
-
-  const first = new Date(y, m, 1);
-  const startPad = first.getDay();
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
-  const prevDays = new Date(y, m, 0).getDate();
-
-  calDaysEl.innerHTML = "";
-  const today = startOfDay(new Date());
-
-  let cells = [];
-  for (let i = 0; i < startPad; i++) {
-    const dayNum = prevDays - startPad + i + 1;
-    cells.push({ dayNum, muted: true, inMonth: false, d: new Date(y, m - 1, dayNum) });
-  }
-  for (let d = 1; d <= daysInMonth; d++) {
-    cells.push({ dayNum: d, muted: false, inMonth: true, d: new Date(y, m, d) });
-  }
-  const rem = cells.length % 7;
-  const trail = rem === 0 ? 0 : 7 - rem;
-  for (let i = 1; i <= trail; i++) {
-    cells.push({ dayNum: i, muted: true, inMonth: false, d: new Date(y, m + 1, i) });
-  }
-
-  for (const c of cells) {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "cal__day";
-    b.textContent = String(c.d.getDate());
-    if (c.muted) b.classList.add("is-muted");
-    if (sameDay(c.d, today)) b.classList.add("is-today");
-    if (filterDate && sameDay(c.d, filterDate)) b.classList.add("is-selected");
-    if (c.muted) {
-      b.disabled = true;
-    } else {
-      b.addEventListener("click", () => {
-        filterDate = startOfDay(c.d);
-        renderCalendar();
-        renderTasks();
-      });
-    }
-    calDaysEl.append(b);
   }
 }
 
@@ -342,6 +321,7 @@ async function deleteTask(id) {
     alert("Could not delete.");
     return;
   }
+  reminderNotifiedTaskIds.delete(id);
   await refreshTasks();
 }
 
@@ -349,7 +329,6 @@ async function refreshTasks() {
   try {
     await loadTasks();
     renderTasks();
-    renderCalendar();
   } catch {
     taskListEl.innerHTML = "";
     emptyEl.hidden = false;
@@ -358,12 +337,19 @@ async function refreshTasks() {
   }
 }
 
+function setDefaultDueInput() {
+  dueInput.value = formatLocalYmd(startOfDay(new Date()));
+}
+
 async function init() {
+  requestNotificationPermission();
   setGreeting();
+  setDefaultDueInput();
   try {
     await loadLists();
     renderListNav();
     await refreshTasks();
+    runReminderCheck();
   } catch {
     listNavEl.innerHTML = "";
     taskListEl.innerHTML = "";
@@ -377,15 +363,18 @@ formEl.addEventListener("submit", async (e) => {
   e.preventDefault();
   const title = titleInput.value.trim();
   if (!title || !selectedListId) return;
+  const due = dueInput.value;
+  if (!due) {
+    dueInput.reportValidity();
+    return;
+  }
   const tagRaw = tagInput.value.trim();
-  const importance = Number(importanceInput.value) || 3;
-  const complexity = Number(complexityInput.value) || 3;
+  const priority = Number(priorityInput.value) || 3;
   const body = {
     title,
     tag: tagRaw || null,
-    importance,
-    complexity,
-    dueDate: dueDateForNewTask(),
+    priority,
+    dueDate: due,
   };
   const res = await api(`/api/lists/${selectedListId}/tasks`, {
     method: "POST",
@@ -398,10 +387,11 @@ formEl.addEventListener("submit", async (e) => {
   }
   titleInput.value = "";
   tagInput.value = "";
-  importanceInput.value = "3";
-  complexityInput.value = "3";
+  priorityInput.value = "3";
+  setDefaultDueInput();
   titleInput.focus();
   await refreshTasks();
+  runReminderCheck();
 });
 
 btnNewList.addEventListener("click", async () => {
@@ -420,29 +410,6 @@ btnNewList.addEventListener("click", async () => {
   await init();
 });
 
-btnShowAll.addEventListener("click", () => {
-  filterDate = null;
-  renderCalendar();
-  renderTasks();
-});
-
-calPrev.addEventListener("click", () => {
-  calView.m -= 1;
-  if (calView.m < 0) {
-    calView.m = 11;
-    calView.y -= 1;
-  }
-  renderCalendar();
-});
-
-calNext.addEventListener("click", () => {
-  calView.m += 1;
-  if (calView.m > 11) {
-    calView.m = 0;
-    calView.y += 1;
-  }
-  renderCalendar();
-});
-
 bindSort();
+setInterval(runReminderCheck, 60_000);
 init();

@@ -21,8 +21,17 @@ public static class UrgencyCalculator
                   + ComplexityWeight * complexity
                   + DeadlineFactor * daysRemaining;
 
-        var rawMin = ImportanceWeight + ComplexityWeight + DeadlineFactor * 365;
-        var rawMax = ImportanceWeight * 5 + ComplexityWeight * 5 + DeadlineFactor * 0;
+        // If we scale against 365 days, any task due "today" ends up near the top of the range
+        // and Math.Round collapses to 5 stars. Instead, scale the star mapping against a
+        // realistic urgency horizon (e.g. next ~30 days).
+        const int daysRemainingForStarScalingMax = 30;
+
+        var rawMin = ImportanceWeight * 1
+                    + ComplexityWeight * 1
+                    + DeadlineFactor * daysRemainingForStarScalingMax;
+        var rawMax = ImportanceWeight * 5
+                    + ComplexityWeight * 5
+                    + DeadlineFactor * 0;
 
         if (rawMax <= rawMin)
             return 3;
